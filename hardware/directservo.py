@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-import time
+import time, os
 
 def setup(robot_config):
     global pl, pr, pp, pc, pitch_enable, claw_enable, sounds
