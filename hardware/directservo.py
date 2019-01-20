@@ -8,16 +8,16 @@ def setup(robot_config):
 
     music_file = robot_config.get(ds, 'music_file')
     sounds = []
-    
+
     if len(music_file):
         with open(music_file, 'r') as f:
             tmp = f.read()
         lines = tmp.split('\n')
-        print(lines)
 
         for line in lines:
             splt = line.split(':')
-            sounds.append((splt[0], splt[1].strip()))
+            if len(splt) == 2:
+                sounds.append((splt[0], splt[1].strip()))
         print(sounds)
 
     claw_enable = robot_config.getint(ds, 'claw_enable')
