@@ -2,9 +2,20 @@ import RPi.GPIO as GPIO
 import time
 
 def setup(robot_config):
-    global pl, pr, pp, pc, pitch_enable, claw_enable
+    global pl, pr, pp, pc, pitch_enable, claw_enable, sounds
 
     ds = 'directservo'
+
+    music_file = robot_config.get(ds, 'music_file')
+    with open(music_file, 'r') as f:
+        tmp = f.read()
+    lines = tmp.split('\n')
+
+    sounds = []
+    for line in lines:
+        splt = line.split(':')
+        sounds.append((splt[0], splt[1].strip()))
+    print(sounds)
 
     claw_enable = robot_config.getint(ds, 'claw_enable')
     pitch_enable = robot_config.getint(ds, 'pitch_enable')
@@ -37,7 +48,11 @@ def setup(robot_config):
         pc = GPIO.PWM(pin_claw, 50)
         pc.start(0)
 
-
+def check_sounds(command):
+    for sound in sounds:
+        if sound[0] == command:
+            os.system("mplayer %s -softvol -volume 100".format(sound[1]))
+            break
 
 def servo_set(servo, value):
     servo.ChangeDutyCycle(value)
@@ -87,3 +102,5 @@ def move(args):
         servo_set(pr, 0)
         if pitch_enable: servo_set(pp, 0)
         if claw_enable: servo_set(pc, 0)
+
+        check_sounds(command)
