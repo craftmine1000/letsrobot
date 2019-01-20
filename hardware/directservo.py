@@ -1,8 +1,9 @@
-import RPi.GPIO as GPIO
+from RPIO import PWM
 import time
 
 def setup(robot_config):
-    global pl, pr, pp, pc, pitch_enable, claw_enable
+    global servos, pitch_enable, claw_enable
+    global pin_left, pin_right, pin_pitch, pin_claw
 
     ds = 'directservo'
 
@@ -12,35 +13,21 @@ def setup(robot_config):
     pin_left = robot_config.getint(ds, 'left') # left servo pin
     pin_right = robot_config.getint(ds, 'right') # right servo pin
     
-    if claw_enable: pin_pitch = robot_config.getint(ds, 'pitch') # camera pitch servo pin
-    
-    if pitch_enable: pin_claw = robot_config.getint(ds, 'claw') # claw servo pin
-
-    GPIO.setmode(GPIO.BCM)
-
-    GPIO.setup(pin_left, GPIO.OUT)
-    GPIO.setup(pin_right, GPIO.OUT)
-
-    pl = GPIO.PWM(pin_left, 50)
-    pr = GPIO.PWM(pin_right, 50)
-
-    pl.start(0)
-    pr.start(0)
-
-    if pitch_enable:
-        GPIO.setup(pin_pitch, GPIO.OUT)
-        pp = GPIO.PWM(pin_pitch, 50)
-        pp.start(0)
+    servos = PWM.Servo()
 
     if claw_enable:
-        GPIO.setup(pin_claw, GPIO.OUT)
-        pc = GPIO.PWM(pin_claw, 50)
-        pc.start(0)
+        pin_pitch = robot_config.getint(ds, 'pitch') # camera pitch servo pin
+    else:
+        pin_pitch = -1
 
+    if pitch_enable:
+        pin_claw = robot_config.getint(ds, 'claw') # claw servo pin
+    else:
+        pin_claw = -1
 
 
 def servo_set(servo, value):
-    servo.ChangeDutyCycle(value)
+    servos.set_servo(servo, value)
 
 def servo_set_time(servo, value, t):
     servo_set(servo, value)
@@ -52,38 +39,44 @@ pitch_incr = 0.2 # increment
 t_delay = 0.06
 def move(args):
     global tilt_servo, pitch_enable, claw_enable
+    global pin_left, pin_right, pin_pitch, pin_claw
 
     command = args['command']
+    
     if command == 'F':
-        servo_set(pl, 15)
-        servo_set(pr, 1)
+        servo_set(pin_left, 15)
+        servo_set(pin_right, 1)
     elif command == 'B':
-        servo_set(pl, 1)
-        servo_set(pr, 15)
+        servo_set(pin_left, 1)
+        servo_set(pin_right, 15)
+
     elif command == 'R':
-        servo_set(pl, 15)
-        servo_set(pr, 15)
+        servo_set(pin_left, 15)
+        servo_set(pin_right, 15)
         time.sleep(t_delay)
-        servo_set(pl, 0)
-        servo_set(pr, 0)
+        servo_set(pin_left, 0)
+        servo_set(pin_right, 0)
     elif command == 'L':
-        servo_set(pl, 1)
-        servo_set(pr, 1)
+        servo_set(pin_left, 1)
+        servo_set(pin_right, 1)
         time.sleep(t_delay)
-        servo_set(pl, 0)
-        servo_set(pr, 0)
+        servo_set(pin_left, 0)
+        servo_set(pin_right, 0)
+
     elif command == 'U' and pitch_enable:
         tilt_servo = min(12, tilt_servo + pitch_incr)
-        servo_set_time(pp, tilt_servo, 0.1)
+        servo_set_time(pin_pitch, tilt_servo, 0.1)
     elif command == 'D' and pitch_enable:
         tilt_servo = max(3, tilt_servo - pitch_incr)
-        servo_set_time(pp, tilt_servo, 0.5)
+        servo_set_time(pin_pitch, tilt_servo, 0.5)
+
     elif command == 'O' and claw_enable:
-        servo_set_time(pc, 1, 0.25)
+        servo_set_time(claw_enable, 1, 0.25)
     elif command == 'C' and claw_enable:
-        servo_set_time(pc, 15, 0.25)
+        servo_set_time(claw_enable, 15, 0.25)
+
     else:
-        servo_set(pl, 0)
-        servo_set(pr, 0)
-        if pitch_enable: servo_set(pp, 0)
-        if claw_enable: servo_set(pc, 0)
+        servo_set(pin_left, 0)
+        servo_set(pin_right, 0)
+        if pitch_enable: servo_set(pin_pitch, 0)
+        if claw_enable: servo_set(claw_enable, 0)
