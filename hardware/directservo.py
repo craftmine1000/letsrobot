@@ -54,7 +54,7 @@ def setup(robot_config):
 def check_sounds(command):
     for sound in sounds:
         if sound[0] == command:
-            os.system("mplayer %s -softvol -volume 100".format(sound[1]))
+            os.system("mplayer {} -softvol -volume 100".format(sound[1]))
             break
 
 def servo_set(servo, value):
