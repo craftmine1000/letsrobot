@@ -5,27 +5,39 @@ def setup(robot_config):
     global pl, pr, pp, pc
 
     ds = 'directservo'
+
+    claw_enable = robot_config.getint(ds, 'claw_enable')
+    pitch_enable = robot_config.getint(ds, 'pitch_enable')
+
     pin_left = robot_config.getint(ds, 'left') # left servo pin
     pin_right = robot_config.getint(ds, 'right') # right servo pin
-    pin_pitch = robot_config.getint(ds, 'pitch') # camera pitch servo pin
-    pin_claw = robot_config.getint(ds, 'claw') # claw servo pin
+    
+    if claw_enable: pin_pitch = robot_config.getint(ds, 'pitch') # camera pitch servo pin
+    
+    if pitch_enable: pin_claw = robot_config.getint(ds, 'claw') # claw servo pin
 
     GPIO.setmode(GPIO.BCM)
 
     GPIO.setup(pin_left, GPIO.OUT)
     GPIO.setup(pin_right, GPIO.OUT)
-    GPIO.setup(pin_pitch, GPIO.OUT)
-    GPIO.setup(pin_claw, GPIO.OUT)
 
     pl = GPIO.PWM(pin_left, 50)
     pr = GPIO.PWM(pin_right, 50)
-    pp = GPIO.PWM(pin_pitch, 50)
-    pc = GPIO.PWM(pin_claw, 50)
 
     pl.start(0)
     pr.start(0)
-    pp.start(0)
-    pc.start(0)
+
+    if pitch_enable:
+        GPIO.setup(pin_pitch, GPIO.OUT)
+        pp = GPIO.PWM(pin_pitch, 50)
+        pp.start(0)
+
+    if claw_enable:
+        GPIO.setup(pin_claw, GPIO.OUT)
+        pc = GPIO.PWM(pin_claw, 50)
+        pc.start(0)
+
+
 
 def servo_set(servo, value):
     servo.ChangeDutyCycle(value)
@@ -60,18 +72,18 @@ def move(args):
         time.sleep(t_delay)
         servo_set(pl, 0)
         servo_set(pr, 0)
-    elif command == 'U':
+    elif command == 'U' and pitch_enable:
         tilt_servo = min(12, tilt_servo + pitch_incr)
         servo_set_time(pp, tilt_servo, 0.1)
-    elif command == 'D':
+    elif command == 'D' and pitch_enable:
         tilt_servo = max(3, tilt_servo - pitch_incr)
         servo_set_time(pp, tilt_servo, 0.5)
-    elif command == 'O':
+    elif command == 'O' and claw_enable:
         servo_set_time(pc, 1, 0.25)
-    elif command == 'C':
+    elif command == 'C' and claw_enable:
         servo_set_time(pc, 15, 0.25)
     else:
         servo_set(pl, 0)
         servo_set(pr, 0)
-        servo_set(pp, 0)
-        servo_set(pc, 0)
+        if pitch_enable: servo_set(pp, 0)
+        if claw_enable: servo_set(pc, 0)
