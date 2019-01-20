@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import time
 
 def setup(robot_config):
-    global pl, pr, pp, pc
+    global pl, pr, pp, pc, pitch_enable, claw_enable
 
     ds = 'directservo'
 
@@ -51,7 +51,7 @@ tilt_servo = 6 # roughly middle for 50ms pwm range
 pitch_incr = 0.2 # increment 
 t_delay = 0.06
 def move(args):
-    global tilt_servo
+    global tilt_servo, pitch_enable, claw_enable
 
     command = args['command']
     if command == 'F':
