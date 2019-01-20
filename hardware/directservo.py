@@ -4,6 +4,7 @@ import time
 def setup(robot_config):
     global pl, pr, pp, pc
 
+    ds = 'directservo'
     pin_left = robot_config.getint(ds, 'left') # left servo pin
     pin_right = robot_config.getint(ds, 'right') # right servo pin
     pin_pitch = robot_config.getint(ds, 'pitch') # camera pitch servo pin
