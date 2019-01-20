@@ -56,9 +56,9 @@ def move(args):
     command = args['command']
     if command == 'F':
         servo_set(pl, 15)
-        servo_set(pr, 1)
+        servo_set(pr, 0.1)
     elif command == 'B':
-        servo_set(pl, 1)
+        servo_set(pl, 0.1)
         servo_set(pr, 15)
     elif command == 'R':
         servo_set(pl, 15)
@@ -67,8 +67,8 @@ def move(args):
         servo_set(pl, 0)
         servo_set(pr, 0)
     elif command == 'L':
-        servo_set(pl, 1)
-        servo_set(pr, 1)
+        servo_set(pl, 0.1)
+        servo_set(pr, 0.1)
         time.sleep(t_delay)
         servo_set(pl, 0)
         servo_set(pr, 0)
